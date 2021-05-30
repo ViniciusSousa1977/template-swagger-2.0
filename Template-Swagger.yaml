@@ -1,0 +1,1900 @@
+# Created by: Vinicius Sousa (Sensedia)
+# Created date: 29/05/2021
+# Update by: -
+# Last update: -
+swagger: "2.0"
+info:
+  title: Nome da API
+  description: |-
+    <font color="0000FF">**Esse Swagger contém os padrões e boas práticas para se criar um contrato de API baseado nos 4 pilares arquiteturais**</font>:
+
+    <li>Especificação REST
+    <li>RFC HTTP
+    <li>Especificação Open API
+    <li>Arquitetura de Referência Corporativa
+
+    ---
+    <font color="0000FF">**O nome da API é importante para um entendimento inicial do que ela trata e pode ter os seguintes contextos**</font>:
+
+    <li>Quando a API possui recursos e operações que <b>representam um processo de negócio</b> com vários domínios de negócio.
+    <li>Quando a API possui recursos e operações que <b>representam uma entidade de um domínio de negócio</b>, seja em alto nível ou não.
+    <li>Quando a API possui recursos e operações que <b>não representam um domínio de negócio</b>, ou seja, agnóstico ao negócio.
+    <li>Quando a API é interna, ou seja, que <b>não seja publicada para o consumidor externo (Parceiro/Cliente)</b>.
+
+    Usar os nomes que foram definidos na **Arquitetura de Referência corporativa**.
+
+    ---
+    <font color="0000FF">**A descrição da API e suas operações devem estar sempre coesas com o negócio, portanto, a descrição da API e de suas operações devem ser o mais detalhada possí­vel para facilitar**</font>:
+
+    <li>Entendimento do escopo funcional da API.
+    <li>Entendimento do escopo funcional da operação.
+    <li>Engagement dos consumidores (Clientes e Parceiros).
+    <li>Onboarding dos consumidores (Clientes e Parceiros).
+    <li>Alteração e evolução da API.
+
+    ---
+    <font color="0000FF">**O versionamento da API deve ser definido de duas formas: Lógico e Físico**</font>.
+    
+    <li>O versionamento lógico é definido na propriedade <b>info->version</b>.
+    <li>O versionamento físico é definido na propriedade <b>basePath</b>.
+    
+    A versão lógica segue o formato <b>MAJOR.MINOR.PATCH</b>
+    
+    <b>MAJOR</b> -> Incrementar quando fizer alterações na API que tornam o <b>contrato incompatí­vel</b> para o consumidor. Essas alterações devem ser alinhadas com os consumidores.
+    <b>MINOR</b> -> Incrementar quando adicionar novas funcionalidades de <b>maneira compatí­vel</b> com versões anteriores.
+    <b>PATCH</b> -> Incrementar ao fazer correções de <b>bugs compatíveis</b> com versões anteriores ou alterações editoriais que não afetem a funcionalidade.
+    ---
+    O **basePath** deve seguir os padrões definidos na **Arquitetura de Referência corporativa**.
+
+    ---
+    <font color="0000FF">**Podem existir entidades que não deverão ficar na seção definitions. Veja as regras para isso**</font>:
+
+    <li>Se <b>não</b> for uma entidade principal de entrada (request body) da operação, ou seja, é uma entidade interna.
+    <li>Se <b>não</b> for uma entidade principal de saída (response body) da operação, ou seja, é uma entidade interna.
+    <li>Se <b>não</b> for uma entidade reusada por outras entidades. Neste caso, pode ser uma entidade interna também.
+
+    Entidades que não estejam na seção definitions deverão ser definidas na propriedade schema do parameter body ou do response.
+
+    ---
+    <font color="0000FF">O **padrão UTC** funciona da seguinte maneira</font>:
+
+    <li>Nas operações de GET o consumidor deverá <b>subtrair</b> a quantidade de horas representada pelo fuso do país (GMT).
+    <li>Nas operações de POST/PUT/PATCH o consumidor deverá <b>adicionar</b> a quantidade de horas representada pelo fuso do país (GMT).
+    <li>No caso do Brasil serão 3 horas.
+
+    ---
+    O uso de HATEOAS deve seguir o <b>Modelo de Maturidade</b> na <b>Arquitetura de Referência corporativa</b>.
+
+    ---
+    <font color="AA0000">Nas operações é usado o termo <b>formaX-rfc</b>, para exemplificar cenários diferentes de uso da RFC. Desconsiderá-lo como recurso.</font>
+  version: 1.0.0
+host: api-sandbox.com.br
+basePath: /nome-api/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+  - application/json; charset=utf-8
+parameters:
+  Authorization:
+    name: Authorization
+    in: header
+    description: Authorization com permissões de acesso.
+    required: true
+    type: string
+    x-example: Bearer NjMxMGQxYzUtYjUwZS0zYzY0LThlMjctODRjMTZlNDc4YzdlOmU2YTFlYjRlLTIwMmQtMzFjYi04YWQxLTVkMzk2OTMyODEzMQ==
+  UrlCallback:
+    name: X-Url-Callback
+    in: header
+    type: string
+    required: true
+    description: URL de callback para receber o resultado, após processamento.
+    x-example: https://dominio.com.br/nome-api/v1/notifications
+  IdentityPath:
+    name: identity-path
+    in: path
+    type: string
+    required: true
+    description: Identificador natural do item do recurso.
+    x-example: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+  IdentityProcessing:
+    name: identity-processing
+    in: path
+    type: string
+    required: true
+    description: Identificador natural do processamento da requisição assíncrona do recurso.
+    x-example: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+  OffSet:
+    in: query
+    name: offset
+    type: integer
+    description: |-
+      O número da página.
+      >
+      Se não informado, será considerado sempre a primeira página.
+    minimum: 0
+    default: 0
+  Limit:
+    in: query
+    name: limit
+    type: integer
+    description: |-
+      A quantidade de itens para serem retornados.
+      >
+      Se não informado, será considerado o valor default.
+    minimum: 1
+    maximum: 50
+    default: 20
+  Asc:
+    in: query
+    name: asc
+    type: array
+    description: Campos a serem ordenados de forma ascendente.
+    collectionFormat: csv
+    minItems: 1
+    maxItems: 5
+    uniqueItems: true
+    items:
+      type: string
+      enum: [campo_string, campo_date, campo_date_time, campo_float, campo_email]
+    default: ["campo_string"]
+  Desc:
+    in: query
+    name: desc
+    type: array
+    description: Campos a serem ordenados de forma descendente.
+    collectionFormat: csv
+    minItems: 1
+    maxItems: 5
+    uniqueItems: true
+    items:
+      type: string
+      enum: [campo_string, campo_date, campo_date_time, campo_float, campo_email]
+    default: ["campo_string"]
+  Fields:
+    in: query
+    name: _fields
+    type: array
+    description: Restringir os campos que serão retornados.
+    collectionFormat: csv
+    minItems: 1
+    maxItems: 5
+    uniqueItems: true
+    items:
+      type: string
+      enum: [campo_string, campo_date, campo_date_time, campo_float, campo_email]
+  Expand:
+    in: query
+    name: _expand
+    type: array
+    description: Expandir subconjuntos internos do recurso.
+    collectionFormat: csv
+    minItems: 1
+    maxItems: 2
+    uniqueItems: true
+    items:
+      type: string
+      enum: [campo_objeto_expand, campo_array_expand]
+#tags:
+#  - name: Root Resource
+#    description: Recurso principal da API.
+paths:
+  "/root-resource/forma1-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no header.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso criado com sucesso.
+          headers:
+            Location:
+              description: |-
+                Link para o item do recurso criado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe
+              type: string
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna os itens do recurso existente de forma <b>síncrona</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de paginação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>offset e limit</b> no query parameter do request para controlar a página a ser retornada e a posição inicial de registros retornados.
+        <li>Utilizar o <b>HTTP Status Code 206</b> no response para indicar retorno parcial.
+        <li>Utilizar o <b>HTTP Status Code 200</b> no response para indicar que não tem mais registros a serem buscados.
+        <li>Utilizar os parâmetros <b>Content-Range e Accept-Ranges</b> no Response Header. O Content-Range deve conter a posição inicial e final da consulta e o total de registros, 
+        como por exemplo, 1-50/125. Em caso do total de registros ser desconhecido ficará 1-50/*. O Accept-Ranges deve conter o limite máximo de registros aceitos para serem 
+        retornados na requisição. Caso seja solicitado uma quantidade maior do que a permitida, será retornado o <b>HTTP Status Code 412</b>.
+        <li>Utilizar <b>Hateoas</b> para criar links de paginação.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+        - ' '
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/OffSet"
+        - $ref: "#/parameters/Limit"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "200":
+          description: Itens do recurso retornado com sucesso.
+          schema:
+            type: array
+            items:
+              allOf:
+                - $ref: "#/definitions/Objeto1"
+                - type: object
+                  properties:
+                    links:
+                      description: Links de hypermedia.
+                      readOnly: true
+                      type: array
+                      items:
+                        $ref: "#/definitions/Link"
+                      example:
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                          rel: Detalhe
+                          method: GET
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                          rel: Alterar
+                          method: PUT
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                          rel: Alterar
+                          method: PATCH
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                          rel: Excluir
+                          method: DELETE
+        "204":
+          description: Recurso não possui itens para ser retornado.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "206":
+          description: Retorno Parcial.
+          headers:
+            "Content-Range":
+              description: Retorna a posição inicial e final da consulta e o total de registros. (Exemplo 1-50/125)
+              type: string
+            "Accept-Ranges":
+              description: |- 
+                Retorna o limite máximo de registros aceitos para a requisição.
+                >
+                Caso seja solicitado uma quantidade maior do que a permitida, será retornado o HTTP status 412.
+              type: string
+          schema:
+            type: object
+            properties:
+              _embedded:
+                type: object
+                properties:
+                  list:
+                    description: Listagem dos itens do recurso retornados na consulta.
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/definitions/Objeto1"
+                        - type: object
+                          properties:
+                            links:
+                              description: Links de hypermedia.
+                              readOnly: true
+                              type: array
+                              items:
+                                $ref: "#/definitions/Link"
+                              example:
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                                  rel: Detalhe
+                                  method: GET
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                                  rel: Alterar
+                                  method: PUT
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                                  rel: Alterar
+                                  method: PATCH
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe"
+                                  rel: Excluir
+                                  method: DELETE
+                  links_paginacao:
+                    description: Links para navegação paginada
+                    type: array
+                    items:
+                      $ref: "#/definitions/LinkPaginacao"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "412":
+          $ref: "#/responses/PreconditionFailed"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/forma2-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso criado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna os itens do recurso existente de forma <b>assíncrona sem url de callback</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+        - ' '
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/forma3-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação que cria um novo item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "200":
+          description: Item do recurso criado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna os itens do recurso existente de forma <b>assíncrona com url de callback</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+        - ' '
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/forma4-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação que cria um novo item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "204":
+          description: Item do recurso criado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/forma5-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/forma6-rfc":
+    post:
+      tags:
+        - Root Resource - POST
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma1-rfc":
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna o item do recurso existente de forma <b>síncrona</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "200":
+          description: Item do recurso retornado com sucesso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no header.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação da nova versão do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "204":
+          description: Nova versão do item do recurso criado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+            Location:
+              description: |-
+                Link para a nova versão criada do item do recurso.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe
+              type: string
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que altera um item do recurso com sucesso que **possa ser identificado** no header.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "204":
+          description: Item do recurso alterado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+            Location:
+              description: |-
+                Link para o item do recurso alterado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe
+              type: string
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma2-rfc":
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna o item do recurso existente de forma <b>assíncrona sem url de callback</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que altera um item do recurso com sucesso que **possa ser identificado** no response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma3-rfc":
+    get:
+      tags:
+        - Root Resource - GET
+      description: |-
+        Operação que retorna o item do recurso existente de forma <b>assíncrona com url de callback</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que altera um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma4-rfc":
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que altera um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "204":
+          description: Item do recurso alterado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma5-rfc":
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/forma6-rfc":
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-processing}/processing-status":
+    get:
+      tags:
+        - Root Resource - Processing
+      description: |-
+        Operação que retorna o status do processamento da requisição assíncrona.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityProcessing"
+      responses:
+        "200":
+          description: Status do processamento assíncrono do recurso retornado com sucesso.
+          schema:
+            $ref: '#/definitions/ProcessingStatus'
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-processing}/processing-result":
+    get:
+      tags:
+        - Root Resource - Processing
+      description: |-
+        Operação que retorna o resultado do processamento da requisição assíncrona.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityProcessing"
+      responses:
+        "200":
+          description: |- 
+            Resultado do processamento assíncrono retornado com sucesso.
+            >
+            Caso o processamento tenha algum erro informado pelo Header **X-Processing-Status-Code**,
+            apenas os campos da estrutura **erro** serão retornados.
+            >
+            Caso contrário, os campos da estrutura **business_entity** serão retornados.
+            >
+            Os campos **erro** e **business_entity** sao apenas para exemplo no body response.
+          headers:
+            X-Processing-Status-Code:
+              description: |-
+                Código de status real do processamento.
+                >
+                Pode conter os seguintes códigos:
+                >
+                400 - Erro de sintaxe do cliente.
+                404 - Dados não encontrado.
+                422 - Erro semântico do cliente.
+              type: string
+          schema:
+            type: object
+            properties:
+              erro:
+                $ref: '#/definitions/InternalErro'
+              business_entity:
+                $ref: '#/definitions/Objeto1'
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+responses:
+  Unauthorized:
+    description: Unauthorized.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  UnsupportedMediaType:
+    description: Unsupported Media Type.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  GatewayTimeout:
+    description: Gateway Timeout.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  BadGateway:
+    description: Bad Gateway.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  Forbidden:
+    description: Forbidden.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  InternalServerError:
+    description: Internal Server Error.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  TooManyRequests:
+    description: Too Many Requests.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  NotFound:
+    description: Not Found.
+  BadRequest:
+    description: Bad Request.
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/InternalErro"
+  UnprocessableEntity:
+    description: Validações de Negócio.
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/InternalErro"
+  PreconditionFailed:
+    description: Precondition Failed.
+    schema:
+      $ref: '#/definitions/InternalErro'
+  Accepted:
+    description: Solicitação aceita com sucesso.
+  AcceptedWithoutCallback:
+    description: Solicitação aceita com sucesso.
+    headers:
+      X-Location-Status:
+        description: |-
+          Link para o status do processamento.
+          >
+          https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/processing-status
+          >
+          OBS: O uso do prefixo 'X-' no nome de Headers customizados está depreciado segundo RFC 6648, ou seja, não é mais obrigatório.
+        type: string
+  NotAcceptable:
+    description: |-
+      Not Acceptable.
+      >
+      O response body deve conter a lista das representações do recurso disponíveis, possibilitando ao consumidor escolher entre elas.
+    schema:
+      description: Descrição da entidade no contexto de negócio.
+      type: object
+      properties:
+        accept:
+          description: Valores permitidos para o header Accept.
+          type: array
+          items:
+            type: string
+          example: 
+            - application/json
+            - text/html
+            - application/xhtml+xml
+        accept_charset:
+          description: Valores permitidos para o header Accept-Charset.
+          type: array
+          items:
+            type: string
+          example: 
+            - utf-8
+            - iso-8859-1;q=0.5
+        accept_encoding:
+          description: Valores permitidos para o header Accept-Encoding.
+          type: array
+          items:
+            type: string
+          example: 
+            - gzip
+            - compress
+            - br
+        accept_language:
+          description: Valores permitidos para o header Accept-Language.
+          type: array
+          items:
+            type: string
+          example: 
+            - de-CH
+            - en-US
+
+definitions:
+  Objeto1:
+    description: |-
+      Entidade representando informações do objeto.
+      >
+      Outros tipos de campos: https://swagger.io/docs/specification/data-models/data-types/
+      >
+      Usar **minLength, maxLength e x-nullable** sempre que possível.
+      >
+      Usar **readOnly** nos campos que devem voltar apenas no GET.
+    type: object
+    required:
+      - campo_integer
+      - campo_long
+      - campo_float
+      - campo_boolean
+      - campo_objeto_interno
+    properties:
+      campo_identificador:
+        description: Campo identificador do recurso.
+        type: string
+        readOnly: true
+        format: uuid
+        example: d6b5293b-8c48-4c38-97b6-348653d0ccbe    
+      campo_integer:
+        description: Descrição do campo no contexto de negócio.
+        type: integer
+        format: int32
+        minLength: 1
+        maxLength: 5
+        x-nullable: false
+        example: 32
+      campo_long:
+        description: Descrição do campo no contexto de negócio.
+        type: integer
+        format: int64
+        example: 327824
+      campo_float:
+        description: Descrição do campo no contexto de negócio.
+        type: number
+        format: float
+        pattern: '^\d+(\.\d{1,2})?$'
+        example: 132412425.12
+      campo_double:
+        description: Descrição do campo no contexto de negócio.
+        type: number
+        format: double
+        pattern: '^\d+(\.\d{1,2})?$'
+        example: 2425.12
+      campo_boolean:
+        description: Descrição do campo no contexto de negócio.
+        type: boolean
+        example: true
+      campo_string:
+        description: Descrição do campo no contexto de negócio.
+        type: string
+        x-nullable: true
+        example: Valor de exemplo.
+      campo_date:
+        description: Descrição do campo no contexto de negócio (RFC 3339, section 5.6).
+        type: string
+        format: date
+        minLength: 10
+        maxLength: 10
+        pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+        example: '2017-06-16'
+      campo_date_time:
+        description: Descrição do campo no contexto de negócio (RFC 3339, section 5.6).
+        type: string
+        format: date-time
+        minLength: 20
+        maxLength: 20
+        pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+        example: '2005-11-03T03:00:00Z'
+      campo_date_time_milissegundos:
+        description: Descrição do campo no contexto de negócio (RFC 3339, section 5.6).
+        type: string
+        format: date-time
+        minLength: 24
+        maxLength: 24
+        pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+        example: '2015-01-15T18:35:45.352Z'
+      campo_hora:
+        description: Descrição do campo no contexto de negócio (RFC 3339, section 5.6).
+        type: string
+        format: date-time
+        minLength: 5
+        maxLength: 5
+        pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+        example: '18:35'
+      campo_byte:
+        description: Descrição do campo no contexto de negócio (base64-encoded).
+        type: string
+        format: byte
+        example: U3dhZ2dlciByb2Nrcw==
+      campo_uuid:
+        description: Descrição do campo no contexto de negócio (base64-encoded).
+        type: string
+        format: uuid
+        example: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+      campo_email:
+        description: Descrição do campo no contexto de negócio.
+        type: string
+        format: email
+        pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}'
+        maxLength: 100
+        example: responsavel@empresa.com.br
+      campo_enum:
+        description: >
+          Descrição do campo no contexto de negócio.
+            * valor1 - descrição no contexto de negócio
+            * valor2 - descrição no contexto de negócio
+            * valor3 - descrição no contexto de negócio
+        type: string
+        enum:
+          - valor1
+          - valor2
+          - valor3
+        default: valor1
+        example: valor2
+      campo_objeto_interno:
+        description: Descrição da entidade no contexto de negócio.
+        type: object
+        required:
+          - campo_integer
+        properties:
+          campo_integer:
+            description: Descrição do campo no contexto de negócio.
+            type: integer
+            format: int32
+            minLength: 1
+            maxLength: 5
+            x-nullable: false
+            example: 32
+          campo_string:
+            description: Descrição do campo no contexto de negócio.
+            type: string
+            x-nullable: true
+            example: Valor de exemplo.
+      campo_objeto_externo:
+        $ref: '#/definitions/Objeto2'
+      campo_array_interno:
+        description: Descrição do campo no contexto de negócio.
+        type: array
+        items:
+          type: object
+          description: Descrição da entidade no contexto de negócio.
+          required:
+            - campo_integer
+          properties:
+            campo_integer:
+              description: Descrição do campo no contexto de negócio.
+              type: integer
+              format: int32
+              minLength: 1
+              maxLength: 5
+              x-nullable: false
+              example: 32
+            campo_string:
+              description: Descrição do campo no contexto de negócio.
+              type: string
+              x-nullable: true
+              example: Valor de exemplo.
+      campo_array_externo:
+        description: Descrição do campo no contexto de negócio.
+        type: array
+        items:
+          $ref: '#/definitions/Objeto2'
+      campo_objeto_expand:
+        description: Descrição do campo no contexto de negócio.
+        type: object
+        readOnly: true
+      campo_array_expand:
+        description: Descrição do campo no contexto de negócio.
+        type: array
+        items:
+          type: object
+        readOnly: true
+        example: []
+
+  Objeto2:
+    description: Entidade representando informações do objeto.
+    type: object
+    required:
+      - campo_integer
+      - campo_string
+    properties:
+      campo_integer:
+        description: Descrição do campo no contexto de negócio.
+        type: integer
+        format: int32
+        minLength: 1
+        maxLength: 5
+        x-nullable: false
+        example: 32
+      campo_string:
+        description: Descrição do campo no contexto de negócio.
+        type: string
+        x-nullable: true
+        example: Valor de exemplo.
+
+  Objeto3:
+    description: Entidade representando informações do objeto.
+    allOf:
+      - type: object
+        required:
+          - campo_identificador
+        properties:
+          campo_identificador:
+            description: Campo identificador do recurso.
+            type: string
+            format: uuid
+            example: d6b5293b-8c48-4c38-97b6-348653d0ccbe    
+      - $ref: "#/definitions/Objeto2"
+
+  ProcessingStatus:
+    description: Entidade representando informações do status do processamento.
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        description: >
+          Status do processamento:
+           * em-processamento - O processamento ainda está sendo executado.
+           * finalizado - O processamento foi encerrado.
+           * abortado - O processamento foi interrompido devido à um erro interno.
+        type: string
+        enum:
+          - em-processamento
+          - finalizado
+          - abortado
+        example: em-processamento
+      url:
+        description: |-
+          URL para obter as informações após processamento.
+          >
+          <font color="#AA0000">Esse campo deverá ser retornado caso o status seja 'finalizado' e seja esperado dados de retorno</font>.
+        type: string
+        example: https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/processing-result
+
+  InternalErro:
+    description: Entidade representando informações do erro ocorrido no backend.
+    type: object
+    required:
+      - mensagem
+    properties:
+      codigo:
+        description: Codigo de erro
+        type: integer
+      mensagem:
+        description: Mensagem de erro.
+        type: string
+
+  Link:
+    description: Entidade representando um hypermedia link para o resource desejado.
+    type: object
+    required:
+      - href
+      - rel
+      - method
+    properties:
+      href:
+        description: URI do recurso alvo.
+        type: string
+      rel:
+        description: Representa a relação entre o recurso atual com o recurso alvo.
+        type: string
+      method:
+        description: Representa o método HTTP que será usado no recurso alvo.
+        type: string
+        example: GET
+        enum:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+
+  LinkPaginacao:
+    type: object
+    description: Entidade representando a estrutura de links de navegação para paginação dos registros retornados.
+    required:
+      - page
+      - href
+    properties:
+      page:
+        description: |-
+          Indicador de movimentação do cursor para referencia indicativa do link.
+          >
+          first -> Primeira página e só retorna caso offset esteja na segunda página em diante.
+          >
+          next -> Próxima página e só retorna caso offset não esteja na última página.
+          >
+          prev -> Página na anterior e só retorna caso offset esteja na segunda página em diante.
+          >
+          last -> Última página e só retorna caso offset não esteja na última página.
+        type: string
+        enum:
+          - first
+          - next
+          - prev
+          - last
+      href:
+        description: Link para movimentação do cursor para acesso as informações.
+        type: string
+    example:
+      - page: first
+        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=1&limit=50
+      - page: next
+        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=4&limit=50
+      - page: prev
+        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=2&limit=50
+      - page: last
+        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=5&limit=50
