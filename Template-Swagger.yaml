@@ -1,5 +1,5 @@
-# Created by: Vinicius Sousa (Sensedia)
-# Created date: 29/05/2021
+# Created by: Vinicius Sousa
+# Created date: 06/06/2021
 # Update by: -
 # Last update: -
 swagger: "2.0"
@@ -66,6 +66,58 @@ info:
     O uso de HATEOAS deve seguir o <b>Modelo de Maturidade</b> na <b>Arquitetura de Referência corporativa</b>.
 
     ---
+    <font color="0000FF">**Os padrões para Recursos são os seguintes**</font>:
+
+    <li>Devem estar no plural quando representam um Archetype de <b>coleção</b> ou <b>loja</b> desse recurso.
+    <li>Podem ser recursos <b>abstratos</b> agregadores de sub-recursos.
+    <li>Devem estar no singular quando representam um Archetype de <b>documento</b> de somente um recurso.
+    <li>Podem ter verbo no seu nome quando representam um Archetype de <b>controlador</b>.
+    <li>Não colocar ação ou formato de mí­dia.
+    <li>Devem ser minúsculos e sem acentuação.
+    <li>Devem ser escritos com spinal-case em caso de mais de um termo.
+    <li>Não devem conter preposições (do, de, com, para, etc.)
+    <li>Legibilidade é mais importante do que o tamanho do nome do recurso. Considere sempre que possível a legibilidade.
+    <li>Evite abreviações e siglas. Exceções devem restringir-se apenas para siglas, acrônimos e abreviações conhecidos ou inerentes ao negócio da empresa. Por exemplo, Id (identificador), 
+    CPF (Cadastro de Pessoa Física), entre outros.
+
+    ---
+    <font color="0000FF">**Os padrões dos controladores de recursos são os seguintes**</font>:
+
+    <b>Recursos - Archetypes</b>
+
+    <li><b>Documento</b>: Um recurso de documento é um conceito singular que é semelhante a uma instância de objeto ou registro de banco de dados. No REST, você pode visualizá-lo como um único 
+    recurso dentro da coleção de recursos. A representação de estado de um documento normalmente inclui os dois campos com valores e links para outros recursos relacionados.
+
+    <ul>
+      <li><font style="background-color:#D3D3D3">http://api.example.com/device-management/managed-devices/{device-id}
+      <li>http://api.example.com/user-management/users/{id}
+      <li>http://api.example.com/user-management/users/{id}/profile</font>
+    </ul>
+
+    <li><b>Coleção</b>: Um recurso de coleção é um “diretório” de itens de recursos gerenciado pelo servidor. Os clientes podem propor novos itens de recursos a serem adicionados a uma coleção. 
+    No entanto, cabe à coleção optar por criar um novo item de recurso ou não.
+
+    <ul>
+      <li><font style="background-color:#D3D3D3">http://api.example.com/device-management/managed-devices
+      <li>http://api.example.com/user-management/users
+      <li>http://api.example.com/user-management/users/{id}/accounts</font>
+    </ul>
+
+    <li><b>Loja</b>: Uma loja é um repositório de recursos gerenciado pelo cliente. Um recurso de armazenamento permite que um cliente de API coloque recursos, recupere-os e decida quando excluí-los. 
+    Uma loja nunca gera novas URIs. Em vez disso, cada recurso armazenado possui uma URI que foi escolhido por um cliente quando foi inicialmente colocado na loja.
+
+    <ul>
+      <li><font style="background-color:#D3D3D3">http://api.example.com/song-management/users/{id}/playlists</font>
+    </ul>
+
+    <li><b>Controlador</b>: Um recurso controlador modela um conceito procedural. Os recursos do controlador são como funções executáveis, com parâmetros e valores de retorno; entradas e saídas.
+
+    <ul>
+      <li><font style="background-color:#D3D3D3">http://api.example.com/cart-management/users/{id}/cart/checkout
+      <li>http://api.example.com/song-management/users/{id}/playlist/play</font>
+    </ul>
+
+    ---
     <font color="AA0000">Nas operações é usado o termo <b>formaX-rfc</b>, para exemplificar cenários diferentes de uso da RFC. Desconsiderá-lo como recurso.</font>
   version: 1.0.0
 host: api-sandbox.com.br
@@ -94,6 +146,20 @@ parameters:
     x-example: https://dominio.com.br/nome-api/v1/notifications
   IdentityPath:
     name: identity-path
+    in: path
+    type: string
+    required: true
+    description: Identificador natural do item do recurso.
+    x-example: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+  IdentityPathA:
+    name: identity-path-a
+    in: path
+    type: string
+    required: true
+    description: Identificador natural do item do recurso.
+    x-example: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+  IdentityPathB:
+    name: identity-path-b
     in: path
     type: string
     required: true
@@ -177,16 +243,35 @@ parameters:
     items:
       type: string
       enum: [campo_objeto_expand, campo_array_expand]
-#tags:
-#  - name: Root Resource
-#    description: Recurso principal da API.
+tags:
+  - name: Root Resource - POST
+    description: Formas de uso da RFC nas operações POST.
+  - name: Root Resource - GET
+    description: Formas de uso da RFC nas operações GET.
+  - name: Root Resource - PUT
+    description: Formas de uso da RFC nas operações PUT.
+  - name: Root Resource - PATCH
+    description: Formas de uso da RFC nas operações PATCH.
+  - name: Root Resource - DELETE
+    description: Formas de uso da RFC nas operações DELETE.
+  - name: Root Resource - Processing
+    description: Formas de uso nas operações de resposta para requisições assíncronas.
+  - name: Root Resource - Association
+    description: |-
+      Formas de uso nas operações de associação.
+      >
+      Segue mais os conceitos de DDD, GRASP, Orientação à Objetos do que a RFC properiamente dita.
 paths:
   "/root-resource/forma1-rfc":
     post:
       tags:
         - Root Resource - POST
       description: >-
-        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no header.
+        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no header de response para ser recuperado via GET.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - name: nome_objeto
@@ -199,6 +284,9 @@ paths:
         "201":
           description: Item do recurso criado com sucesso.
           headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
             Location:
               description: |-
                 Link para o item do recurso criado.
@@ -240,7 +328,7 @@ paths:
         <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
         <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
         <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
-        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
 
         ---
         Ao utilizar o <b>recurso de paginação</b>, o contrato das APIs deve ser da seguinte forma:
@@ -467,6 +555,141 @@ paths:
           $ref: "#/responses/NotAcceptable"
         "412":
           $ref: "#/responses/PreconditionFailed"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que cria um item do recurso com sucesso que **possa ser identificado** no header response para ser recuperado via GET.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso criado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+            Location:
+              description: |-
+                Link para o item do recurso criado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe
+              type: string
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria um item do recurso com sucesso que **possa ser identificado** no header response para ser recuperado via GET.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "201":
+          description: Item do recurso criado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+            Location:
+              description: |-
+                Link para o item do recurso criado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe
+              type: string
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -479,7 +702,7 @@ paths:
       tags:
         - Root Resource - POST
       description: >-
-        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no response body.
+        Operação que cria um novo item do recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET.
       parameters:
         - $ref: "#/parameters/Authorization"
         - name: nome_objeto
@@ -528,7 +751,7 @@ paths:
         <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
         <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
         <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
-        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
 
         ---
         Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
@@ -539,9 +762,9 @@ paths:
         <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
         <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
       produces:
+        - ' '
         - application/json
         - application/json; charset=utf-8
-        - ' '
       parameters: 
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/Asc"
@@ -658,6 +881,121 @@ paths:
           $ref: "#/responses/Forbidden"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que cria um item do recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria um item do recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "201":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -719,7 +1057,7 @@ paths:
         <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
         <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
         <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
-        <li>O nome do query parameter deve ser o mesmo do atributo da entiddae na visão do modelo canônico.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
 
         ---
         Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
@@ -730,9 +1068,9 @@ paths:
         <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
         <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
       produces:
+        - ' '
         - application/json
         - application/json; charset=utf-8
-        - ' '
       parameters: 
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/UrlCallback"
@@ -850,6 +1188,121 @@ paths:
           $ref: "#/responses/Forbidden"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que cria um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -865,6 +1318,8 @@ paths:
         Operação que cria um novo item do recurso com sucesso que **não possa ser identificado** e não possui response body.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - name: nome_objeto
@@ -901,6 +1356,131 @@ paths:
         "504":
           $ref: "#/responses/GatewayTimeout"
 
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação que cria um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "204":
+          description: Item do recurso alterado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "204":
+          description: Item do recurso alterado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
   "/root-resource/forma5-rfc":
     post:
       tags:
@@ -909,6 +1489,8 @@ paths:
         Operação cujo processamento é de forma assíncrona, sem **url de callback**.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - name: nome_objeto
@@ -939,6 +1521,115 @@ paths:
         "504":
           $ref: "#/responses/GatewayTimeout"
 
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
   "/root-resource/forma6-rfc":
     post:
       tags:
@@ -947,6 +1638,8 @@ paths:
         Operação cujo processamento é de forma assíncrona, com **url de callback**.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/UrlCallback"
@@ -956,6 +1649,117 @@ paths:
           description: Estrutura que permitirá o processamento.
           schema:
             $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    put:
+      tags:
+        - Root Resource - PUT
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
       responses:
         "202":
           $ref: "#/responses/Accepted"
@@ -1011,6 +1815,8 @@ paths:
           $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -1022,16 +1828,54 @@ paths:
       tags:
         - Root Resource - PATCH
       description: >-
-        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no header.
+        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no header response para ser recuperado via GET.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
         - name: nome_objeto
           in: body
           required: true
-          description: Estrutura que permitirá a criação da nova versão do item do recurso.
+          description: |-
+            Estrutura que permitirá a criação da nova versão do item do recurso.
+            >
+            **Utilizar a RFC 6901 e 6902 para a estrutura de documento JSON**.
           schema:
-            $ref: "#/definitions/Objeto1"
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
       responses:
         "204":
           description: Nova versão do item do recurso criado com sucesso.
@@ -1051,6 +1895,8 @@ paths:
           $ref: "#/responses/Unauthorized"
         "403":
           $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
         "415":
@@ -1070,7 +1916,11 @@ paths:
       tags:
         - Root Resource - PUT
       description: >-
-        Operação que altera um item do recurso com sucesso que **possa ser identificado** no header.
+        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no header response para ser recuperado via GET.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1099,10 +1949,50 @@ paths:
           $ref: "#/responses/Unauthorized"
         "403":
           $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
         "415":
           $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    delete:
+      tags:
+        - Root Resource - DELETE
+      description: >-
+        Operação que exclui um item do recurso com sucesso.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+      responses:
+        "204":
+          description: Item do recurso excluído com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
         "422":
           $ref: "#/responses/UnprocessableEntity"
         "429":
@@ -1127,6 +2017,7 @@ paths:
         <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
         <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
       produces:
+        - ' '
         - application/json
         - application/json; charset=utf-8
       parameters: 
@@ -1143,6 +2034,8 @@ paths:
           $ref: "#/responses/Forbidden"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -1154,7 +2047,7 @@ paths:
       tags:
         - Root Resource - PUT
       description: >-
-        Operação que altera um item do recurso com sucesso que **possa ser identificado** no response body.
+        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET.
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1175,12 +2068,117 @@ paths:
           $ref: "#/responses/Unauthorized"
         "403":
           $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
         "415":
           $ref: "#/responses/UnsupportedMediaType"
         "422":
           $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria nova versão de um item do recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    delete:
+      tags:
+        - Root Resource - DELETE
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
         "429":
           $ref: "#/responses/TooManyRequests"
         "500":
@@ -1203,6 +2201,7 @@ paths:
         <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
         <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
       produces:
+        - ' '
         - application/json
         - application/json; charset=utf-8
       parameters: 
@@ -1220,6 +2219,8 @@ paths:
           $ref: "#/responses/Forbidden"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -1231,7 +2232,7 @@ paths:
       tags:
         - Root Resource - PUT
       description: >-
-        Operação que altera um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+        Operação que cria nova versão de um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1252,6 +2253,8 @@ paths:
           $ref: "#/responses/Unauthorized"
         "403":
           $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
         "415":
@@ -1267,14 +2270,120 @@ paths:
         "504":
           $ref: "#/responses/GatewayTimeout"
 
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria nova versão de um item do recurso com sucesso que **não possa ser identificado**, mas existe response body.
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "200":
+          description: Item do recurso alterado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    delete:
+      tags:
+        - Root Resource - DELETE
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/UrlCallback"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
   "/root-resource/{identity-path}/forma4-rfc":
     put:
       tags:
         - Root Resource - PUT
       description: >-
-        Operação que altera um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+        Operação que cria nova versão de um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1297,6 +2406,87 @@ paths:
           $ref: "#/responses/Unauthorized"
         "403":
           $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação que cria nova versão de um item do recurso com sucesso que **não possa ser identificado** e não possui response body.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a alteração do item do recurso.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
+      responses:
+        "204":
+          description: Item do recurso alterado com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
         "415":
@@ -1320,6 +2510,8 @@ paths:
         Operação cujo processamento é de forma assíncrona, sem **url de callback**.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1329,6 +2521,77 @@ paths:
           description: Estrutura que permitirá o processamento.
           schema:
             $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
       responses:
         "202":
           $ref: "#/responses/AcceptedWithoutCallback"
@@ -1359,6 +2622,8 @@ paths:
         Operação cujo processamento é de forma assíncrona, com **url de callback**.
       produces:
         - ' '
+        - application/json
+        - application/json; charset=utf-8
       parameters:
         - $ref: "#/parameters/Authorization"
         - $ref: "#/parameters/IdentityPath"
@@ -1369,6 +2634,78 @@ paths:
           description: Estrutura que permitirá o processamento.
           schema:
             $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Root Resource - PATCH
+      description: >-
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá o processamento.
+          schema:
+            description: Lista das instruções de operações a serem executadas no servidor.
+            type: array
+            items:
+              $ref: "#/definitions/PatchInstruction"
+            example:
+              - op: replace
+                path: /campo_integer
+                value: 32
+              - op: replace
+                path: /campo_double
+                value: 2425.12
+              - op: replace
+                path: /campo_date
+                value: "2017-06-16"
+              - op: replace
+                path: /campo_objeto_interno
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: replace
+                path: /campo_array_interno/0
+                value: {
+                  "campo_integer": 32,
+                  "campo_string": "Valor de exemplo."
+                }
+              - op: add
+                path: /campo_array_interno/-
+                value: {
+                  "campo_integer": 54,
+                  "campo_string": "Valor de exemplo."
+                }
       responses:
         "202":
           $ref: "#/responses/Accepted"
@@ -1416,6 +2753,8 @@ paths:
           $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -1472,6 +2811,457 @@ paths:
           $ref: "#/responses/NotFound"
         "406":
           $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource-a/{identity-path-a}/resource/{identity-path-b}/forma1-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa itens de recursos já criados, cuja **associação se dá através de agregação**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+      responses:
+        "201":
+          description: Associação criada com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+            Location:
+              description: |-
+                Link para o item do recurso criado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/f6r5293g-8a48-4a38-97y6-348653d0jhbe
+              type: string
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que recupera um item do recurso associado à outro item de recurso de forma <b>síncrona</b>.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "200":
+          description: Item do recurso associado retornado com sucesso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource-a/{identity-path-a}/resource/{identity-path-b}/forma2-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa dois itens de recursos já criados, cuja **associação se dá através de agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que recupera um item do recurso associado à outro item de recurso de forma **assíncrona sem url de callback**.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource-a/{identity-path-a}/resource/{identity-path-b}/forma3-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa dois itens de recursos já criados, cuja **associação se dá através de agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+        - $ref: "#/parameters/UrlCallback"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que recupera um item do recurso associado à outro item de recurso de forma **assíncrona com url de callback**.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - $ref: "#/parameters/IdentityPathA"
+        - $ref: "#/parameters/IdentityPathB"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma1-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa itens de recursos já criados, cuja **associação se dá através de agregação**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: identificadores
+          in: body
+          required: true
+          description: Lista dos identificadores do recurso para associação.
+          schema:
+            type: array
+            items:
+              type: object
+              description: Identificador do recurso.
+              properties:
+                identificador:
+                  type: string
+            example:
+              - identificador: f6r5293g-8a48-4a38-97y6-348653d0jhbe
+              - identificador: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+      responses:
+        "204":
+          description: Associação criada com sucesso.
+          headers:
+            Content-Length:
+              description: Tamanho do conteúdo. Deve ser 0.
+              type: integer
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma2-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa itens de recursos já criados, cuja **associação se dá através de agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: identificadores
+          in: body
+          required: true
+          description: Lista dos identificadores do recurso para associação.
+          schema:
+            type: array
+            items:
+              type: object
+              description: Identificador do recurso.
+              properties:
+                identificador:
+                  type: string
+            example:
+              - identificador: f6r5293g-8a48-4a38-97y6-348653d0jhbe
+              - identificador: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma3-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que associa itens de recursos já criados, cuja **associação se dá através de agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/UrlCallback"
+        - name: identificadores
+          in: body
+          required: true
+          description: Lista dos identificadores do recurso para associação.
+          schema:
+            type: array
+            items:
+              type: object
+              description: Identificador do recurso.
+              properties:
+                identificador:
+                  type: string
+            example:
+              - identificador: f6r5293g-8a48-4a38-97y6-348653d0jhbe
+              - identificador: d6b5293b-8c48-4c38-97b6-348653d0ccbe
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma4-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que cria um item de recurso e associa à outro item de recursos já criado, cuja **associação não é por agregação**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso criado e associado com sucesso.
+          headers:
+            Location:
+              description: |-
+                Link para o item do recurso criado.
+                >
+                https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/f6r5293g-8a48-4a38-97y6-348653d0jhbe
+              type: string
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
         "500":
           $ref: "#/responses/InternalServerError"
         "502":
@@ -1528,9 +3318,16 @@ responses:
       $ref: '#/definitions/InternalErro'
   Accepted:
     description: Solicitação aceita com sucesso.
+    headers:
+      Content-Length:
+        description: Tamanho do conteúdo. Deve ser 0.
+        type: integer
   AcceptedWithoutCallback:
     description: Solicitação aceita com sucesso.
     headers:
+      Content-Length:
+        description: Tamanho do conteúdo. Deve ser 0.
+        type: integer
       X-Location-Status:
         description: |-
           Link para o status do processamento.
@@ -1836,6 +3633,39 @@ definitions:
       mensagem:
         description: Mensagem de erro.
         type: string
+
+  PatchInstruction:
+    description: Entidade representando informações do objeto.
+    type: object
+    required:
+      - op
+      - path
+    properties:
+      op:
+        description: Campo representando a instrução de operação a ser executada pelo servidor.
+        type: string
+        enum: [add, replace, move, copy, remove, test]
+        example: replace
+      path:
+        description: Campo representando o campo alvo com o valor a ser manipulado.
+        type: string
+        example: /campo_integer
+      value:
+        description: |-
+          Campo representando o novo valor para o ponteiro representado em path.
+          >
+          <font color="#AA0000">O tipo do campo depende do tipo do campo alvo representado em path.
+          >
+          Esse campo só deverá ser preenchido caso 'op' seja do tipo 'test', 'add' ou 'replace'</font>
+        type: integer
+        example: 32
+      from:
+        description: |-
+          Campo representando o campo origem com o valor a ser manipulado para o campo alvo.
+          >
+          <font color="#AA0000">Esse campo só deverá ser preenchido caso 'op' seja do tipo 'move' ou 'copy'</font>
+        type: string
+        example: /campo_array
 
   Link:
     description: Entidade representando um hypermedia link para o resource desejado.
