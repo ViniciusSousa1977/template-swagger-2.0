@@ -1,5 +1,5 @@
 # Created by: Vinicius Sousa
-# Created date: 06/06/2021
+# Created date: 12/06/2021
 # Update by: -
 # Last update: -
 swagger: "2.0"
@@ -260,7 +260,7 @@ tags:
     description: |-
       Formas de uso nas operações de associação.
       >
-      Segue mais os conceitos de DDD, GRASP, Orientação à Objetos do que a RFC properiamente dita.
+      Segue mais os conceitos de DDD, GRASP, Orientação à Objetos do que a RFC propriamente dita.
 paths:
   "/root-resource/forma1-rfc":
     post:
@@ -545,6 +545,15 @@ paths:
                     type: array
                     items:
                       $ref: "#/definitions/LinkPaginacao"
+                    example:
+                      - page: first
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=1&limit=50
+                      - page: next
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=4&limit=50
+                      - page: prev
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=2&limit=50
+                      - page: last
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=5&limit=50
         "400":
           $ref: "#/responses/BadRequest"
         "401":
@@ -3118,6 +3127,262 @@ paths:
         "504":
           $ref: "#/responses/GatewayTimeout"
 
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que retorna itens do recurso associado à outro item de recurso de forma <b>síncrona</b>.
+        >
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de paginação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>offset e limit</b> no query parameter do request para controlar a página a ser retornada e a posição inicial de registros retornados.
+        <li>Utilizar o <b>HTTP Status Code 206</b> no response para indicar retorno parcial.
+        <li>Utilizar o <b>HTTP Status Code 200</b> no response para indicar que não tem mais registros a serem buscados.
+        <li>Utilizar os parâmetros <b>Content-Range e Accept-Ranges</b> no Response Header. O Content-Range deve conter a posição inicial e final da consulta e o total de registros, 
+        como por exemplo, 1-50/125. Em caso do total de registros ser desconhecido ficará 1-50/*. O Accept-Ranges deve conter o limite máximo de registros aceitos para serem 
+        retornados na requisição. Caso seja solicitado uma quantidade maior do que a permitida, será retornado o <b>HTTP Status Code 412</b>.
+        <li>Utilizar <b>Hateoas</b> para criar links de paginação.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/OffSet"
+        - $ref: "#/parameters/Limit"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "200":
+          description: Itens do recurso retornado com sucesso.
+          schema:
+            type: array
+            items:
+              allOf:
+                - $ref: "#/definitions/Objeto1"
+                - type: object
+                  properties:
+                    links:
+                      description: Links de hypermedia.
+                      readOnly: true
+                      type: array
+                      items:
+                        $ref: "#/definitions/Link"
+                      example:
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                          rel: Detalhe
+                          method: GET
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                          rel: Alterar
+                          method: PUT
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                          rel: Alterar
+                          method: PATCH
+                        - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                          rel: Excluir
+                          method: DELETE
+        "206":
+          description: Retorno Parcial.
+          headers:
+            "Content-Range":
+              description: Retorna a posição inicial e final da consulta e o total de registros. (Exemplo 1-50/125)
+              type: string
+            "Accept-Ranges":
+              description: |- 
+                Retorna o limite máximo de registros aceitos para a requisição.
+                >
+                Caso seja solicitado uma quantidade maior do que a permitida, será retornado o HTTP status 412.
+              type: string
+          schema:
+            type: object
+            properties:
+              _embedded:
+                type: object
+                properties:
+                  list:
+                    description: Listagem dos itens do recurso retornados na consulta.
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/definitions/Objeto1"
+                        - type: object
+                          properties:
+                            links:
+                              description: Links de hypermedia.
+                              readOnly: true
+                              type: array
+                              items:
+                                $ref: "#/definitions/Link"
+                              example:
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                                  rel: Detalhe
+                                  method: GET
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                                  rel: Alterar
+                                  method: PUT
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                                  rel: Alterar
+                                  method: PATCH
+                                - href: "https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/j4b5323f-8a34-4h12-97k9-543253e0ddbe"
+                                  rel: Excluir
+                                  method: DELETE
+                  links_paginacao:
+                    description: Links para navegação paginada
+                    type: array
+                    items:
+                      $ref: "#/definitions/LinkPaginacao"
+                    example:
+                      - page: first
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource?offset=1&limit=50
+                      - page: next
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource?offset=4&limit=50
+                      - page: prev
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource?offset=2&limit=50
+                      - page: last
+                        href: https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource?offset=5&limit=50
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "412":
+          $ref: "#/responses/PreconditionFailed"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
   "/root-resource/{identity-path}/resource/forma2-rfc":
     post:
       tags:
@@ -3159,6 +3424,160 @@ paths:
           $ref: "#/responses/NotAcceptable"
         "415":
           $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que retorna itens do recurso associado à outro item de recurso de forma **assíncrona sem url de callback**.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
         "429":
           $ref: "#/responses/TooManyRequests"
         "500":
@@ -3219,12 +3638,167 @@ paths:
         "504":
           $ref: "#/responses/GatewayTimeout"
 
+    get:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que retorna itens do recurso associado à outro item de recurso de forma **assíncrona com url de callback**.
+        >
+        Os <b>Query Parameters</b> devem ser:
+
+        <li>Sempre serem <b>opcionais</b>. Em caso de obrigatoriedade, passar no <b>Header</b>.
+        <li>Escritos com lower snake-case em caso de mais de um termo.
+        <li>Não ter acentuação.
+        <li>Utilizar o <b>_fields</b> para restringir os campos que retornarão.
+        <li>Utilizar o <b>_expand</b> para expandir subconjuntos internos de um recurso.
+        <li>Atributos obrigatórios a serem retornados não podem ser restringidos.
+        <li>O nome do query parameter deve ser o mesmo do atributo da entidade na visão do modelo canônico.
+
+        ---
+        Ao utilizar o <b>recurso de ordenação</b>, o contrato das APIs deve ser da seguinte forma:
+
+        <li>Utilizar os parâmetros <b>asc e desc</b> na query parameter do request para controlar a ordenação ascendente e descendente.
+        <li>Fazer a listagem dos campos separando por vírgulas.
+        <li>Colocar os campos que podem ser ordenados como ENUMs.
+        <li>Se o backend for legado e caso necessário, <b>asc e desc</b> podem ser ajustados, como por exemplo, aceitar apenas um campo.
+        <li>Exemplo: "asc=nome" OU "desc=data_nascimento” OU "asc=nome,data_nascimento”
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/UrlCallback"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/Asc"
+        - $ref: "#/parameters/Desc"
+        - $ref: "#/parameters/Fields"
+        - $ref: "#/parameters/Expand"
+        - name: campo_string
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar por valores parciais:
+
+            <li><b>Parcial no Fim</b>: é utilizado o formato - <b>{valor}*</b>
+            <li><b>Parcial no Início</b>: é utilizado o formato - <b>*{valor}</b>
+          x-example: Valor de exemplo
+        - name: campo_numeric
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando funções:
+
+            <li><b>Maior Que (Greater Than)</b>: é utilizado o formato - <b>greaterThan({valor})</b>
+            <li><b>Menor Que (Less Than)</b>: é utilizado o formato - <b>lessThan({valor})</b>
+            <li><b>Entre (Between)</b>: é utilizado o formato - <b>between({valorInicial},{valorFinal})</b>, onde o valorInicial e o valorFinal determinam os limites de uma coleção.
+          x-example: 18
+        - name: campo_date
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date
+          minLength: 10
+          maxLength: 10
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))$'
+          x-example: '2021-04-25'
+        - name: campo_date_time
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 20
+          maxLength: 20
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([Zz])$'
+          x-example: '2005-11-03T03:00:00Z'
+        - name: campo_date_time_milissegundos
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: date-time
+          minLength: 24
+          maxLength: 24
+          pattern: '^((((19|[2-9]\d)\d{2})-(0[13578]|1[02])-(0[1-9]|[12]\d|3[01]))|(((19|[2-9]\d)\d{2})-(0[13456789]|1[012])-(0[1-9]|[12]\d|30))|(((19|[2-9]\d)\d{2})-02-(0[1-9]|1\d|2[0-8]))|(((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))-02-29))([Tt])([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].([0-9]{3})([Zz])$'
+          x-example: '2015-01-15T18:35:45.352Z'
+        - name: campo_hora
+          in: query
+          type: string
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Podemos filtrar usando as mesmas funções dos tipos numéricos.
+          format: hour
+          minLength: 5
+          maxLength: 5
+          pattern: '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+          x-example: '18:35'
+        - name: campo_enum
+          in: query
+          type: string
+          description: >
+            Descrição do campo no contexto de negócio.
+              * valor1 - descrição no contexto de negócio
+              * valor2 - descrição no contexto de negócio
+          enum:
+            - valor1
+            - valor2
+          x-example: valor1
+        - name: campo_array
+          in: query
+          type: array
+          description: |-
+            Descrição do campo no contexto de negócio.
+            >
+            Outros tipos de collectionFormat
+            https://swagger.io/docs/specification/2-0/describing-parameters/#query-parameters
+          collectionFormat: csv
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 6
+            maxLength: 50
+          x-example: 'valor1, valor2, valor3'
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
   "/root-resource/{identity-path}/resource/forma4-rfc":
     post:
       tags:
         - Root Resource - Association
       description: |-
-        Operação que cria um item de recurso e associa à outro item de recursos já criado, cuja **associação não é por agregação**.
+        Operação que cria um item de recurso com sucesso que **possa ser identificado** no header de response para ser recuperado via GET e associa à outro item de recurso já criado, cuja **associação não é por agregação**.
       produces:
         - ' '
         - application/json
@@ -3248,6 +3822,8 @@ paths:
                 >
                 https://api-sandbox.com.br/nome-api/v1/root-resource/d6b5293b-8c48-4c38-97b6-348653d0ccbe/resource/f6r5293g-8a48-4a38-97y6-348653d0jhbe
               type: string
+        "400":
+          $ref: "#/responses/BadRequest"
         "401":
           $ref: "#/responses/Unauthorized"
         "403":
@@ -3260,6 +3836,181 @@ paths:
           $ref: "#/responses/UnsupportedMediaType"
         "422":
           $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma5-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que cria um item de recurso com sucesso que **possa ser identificado** no response body para ser recuperado via GET e associa à outro item de recurso já criado, cuja **associação não é por agregação**.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "201":
+          description: Item do recurso criado e associado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto3'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma6-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que cria um item de recurso com sucesso que **não possa ser identificado**, mas existe response body e associa à outro item de recurso já criado, cuja **associação não é por agregação**.
+      produces:
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "200":
+          description: Item do recurso criado e associado com sucesso.
+          schema:
+            $ref: '#/definitions/Objeto2'
+        "400":
+          $ref: "#/responses/BadRequest"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "404":
+          $ref: "#/responses/NotFound"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma7-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que cria um item de recurso e associa à outro item de recurso já criado, cuja **associação não é por agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, sem **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/AcceptedWithoutCallback"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/responses/TooManyRequests"
+        "500":
+          $ref: "#/responses/InternalServerError"
+        "502":
+          $ref: "#/responses/BadGateway"
+        "504":
+          $ref: "#/responses/GatewayTimeout"
+
+  "/root-resource/{identity-path}/resource/forma8-rfc":
+    post:
+      tags:
+        - Root Resource - Association
+      description: |-
+        Operação que cria um item de recurso e associa à outro item de recurso já criado, cuja **associação não é por agregação**.
+        >
+        Operação cujo processamento é de forma assíncrona, com **url de callback**.
+      produces:
+        - ' '
+        - application/json
+        - application/json; charset=utf-8
+      parameters: 
+        - $ref: "#/parameters/Authorization"
+        - $ref: "#/parameters/IdentityPath"
+        - $ref: "#/parameters/UrlCallback"
+        - name: nome_objeto
+          in: body
+          required: true
+          description: Estrutura que permitirá a criação do item do recurso.
+          schema:
+            $ref: "#/definitions/Objeto1"
+      responses:
+        "202":
+          $ref: "#/responses/Accepted"
+        "401":
+          $ref: "#/responses/Unauthorized"
+        "403":
+          $ref: "#/responses/Forbidden"
+        "406":
+          $ref: "#/responses/NotAcceptable"
+        "415":
+          $ref: "#/responses/UnsupportedMediaType"
         "429":
           $ref: "#/responses/TooManyRequests"
         "500":
@@ -3719,12 +4470,3 @@ definitions:
       href:
         description: Link para movimentação do cursor para acesso as informações.
         type: string
-    example:
-      - page: first
-        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=1&limit=50
-      - page: next
-        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=4&limit=50
-      - page: prev
-        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=2&limit=50
-      - page: last
-        href: https://api-sandbox.com.br/nome-api/v1/root-resource?offset=5&limit=50
